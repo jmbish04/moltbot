@@ -90,7 +90,7 @@ export async function ensureMoltbotGateway(
   const command = '/usr/local/bin/start-moltbot.sh';
 
   console.log('Starting process with command:', command);
-  console.log('Environment vars being passed:', Object.keys(envVars));
+  console.log('Environment vars being passed:', Object.keys(finalEnvVars));
 
   let process: Process;
   try {
