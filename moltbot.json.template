@@ -1,11 +1,54 @@
 {
   "agents": {
     "defaults": {
-      "workspace": "/root/clawd"
+      "workspace": "/root/clawd",
+      "model": "anthropic/claude-4-5-sonnet",
+      "fallback": "openai/gpt-5-nano",
+      "heartbeat": { "every": "30m" }
+    },
+    "definitions": {
+      "clawdbot": {
+        "provider": "anthropic",
+        "model": "claude-4-5-sonnet",
+        "tools": ["system", "browser", "shell"]
+      },
+      "moltbot-fast": {
+        "provider": "cloudflare",
+        "model": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+        "description": "Low-latency edge agent for quick terminal commands."
+      },
+      "researcher": {
+        "provider": "google",
+        "model": "gemini-2.0-flash",
+        "description": "Large context window for deep file analysis."
+      }
+    }
+  },
+  "providers": {
+    "anthropic": {
+      "apiKey": "${ANTHROPIC_API_KEY}",
+      "baseUrl": "https://api.anthropic.com"
+    },
+    "openai": {
+      "apiKey": "${OPENAI_API_KEY}",
+      "model": "${OPENAI_MODEL}"
+    },
+    "google": {
+      "apiKey": "${GOOGLE_API_KEY}",
+      "region": "us-central1"
+    },
+    "cloudflare": {
+      "accountId": "${CF_ACCOUNT_ID}",
+      "apiToken": "${CF_API_TOKEN}",
+      "gateway": "${CF_AI_GATEWAY}"
     }
   },
   "gateway": {
     "port": 18789,
-    "mode": "local"
+    "mode": "local",
+    "trustedProxies": ["10.1.0.0"],
+    "auth": { 
+      "token": "${MOLTBOT_GATEWAY_TOKEN}" 
+    }
   }
 }
