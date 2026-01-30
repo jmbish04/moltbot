@@ -15,12 +15,9 @@ if pgrep -f "clawdbot gateway" > /dev/null 2>&1; then
     exit 0
 fi
 
-# Optional: Use envsubst if you want to support ${} in the raw template file
-# Requires 'gettext-base' to be installed in your Dockerfile
-if command -v envsubst > /dev/null; then
-    envsubst < "$TEMPLATE_FILE" > "$CONFIG_FILE"
-fi
-
+# ============================================================
+# DEFINITIONS (Moved to top)
+# ============================================================
 # Paths (clawdbot paths are used internally - upstream hasn't renamed yet)
 CONFIG_DIR="/root/.clawdbot"
 CONFIG_FILE="$CONFIG_DIR/clawdbot.json"
@@ -33,6 +30,20 @@ echo "Backup directory: $BACKUP_DIR"
 
 # Create config directory
 mkdir -p "$CONFIG_DIR"
+
+# ============================================================
+# TEMPLATE SUBSTITUTION
+# ============================================================
+# Use envsubst to support ${SECRETS} in the raw template file
+# This must happen AFTER variables are defined but BEFORE node config
+if command -v envsubst > /dev/null; then
+    echo "Applying environment variables to template..."
+    if [ -f "$TEMPLATE_FILE" ]; then
+        envsubst < "$TEMPLATE_FILE" > "$CONFIG_FILE"
+    else
+        echo "Template file not found at $TEMPLATE_FILE, skipping envsubst."
+    fi
+fi
 
 # ============================================================
 # RESTORE FROM R2 BACKUP
@@ -115,7 +126,9 @@ fi
 if [ ! -f "$CONFIG_FILE" ]; then
     echo "No existing config found, initializing from template..."
     if [ -f "$TEMPLATE_FILE" ]; then
-        cp "$TEMPLATE_FILE" "$CONFIG_FILE"
+        # Check if envsubst already created it, if not copy it
+        # (This handles the case where envsubst wasn't available)
+        cp -n "$TEMPLATE_FILE" "$CONFIG_FILE" || true
     else
         # Create minimal config if template doesn't exist
         cat > "$CONFIG_FILE" << 'EOFCONFIG'
@@ -168,8 +181,6 @@ if (config.models?.providers?.anthropic?.models) {
         delete config.models.providers.anthropic;
     }
 }
-
-
 
 // Gateway configuration
 config.gateway.port = 18789;
