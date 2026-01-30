@@ -47,7 +47,11 @@ export async function findExistingMoltbotProcess(sandbox: Sandbox): Promise<Proc
  * @param env - Worker environment bindings
  * @returns The running gateway process
  */
-export async function ensureMoltbotGateway(sandbox: Sandbox, env: MoltbotEnv): Promise<Process> {
+export async function ensureMoltbotGateway(
+  sandbox: Sandbox, 
+  env: MoltbotEnv,
+  dynamicSecrets: Record<string, string> = {}
+): Promise<Process> {
   // Mount R2 storage for persistent data (non-blocking if not configured)
   // R2 is used as a backup - the startup script will restore from it on boot
   await mountR2Storage(sandbox, env);
@@ -78,7 +82,11 @@ export async function ensureMoltbotGateway(sandbox: Sandbox, env: MoltbotEnv): P
 
   // Start a new Moltbot gateway
   console.log('Starting new Moltbot gateway...');
-  const envVars = buildEnvVars(env);
+  const baseEnvVars = buildEnvVars(env);
+  const finalEnvVars = {
+      ...dynamicSecrets, // Spread dynamic secrets first
+      ...baseEnvVars,    // Allow buildEnvVars to override if specific mapping is needed
+  };  
   const command = '/usr/local/bin/start-moltbot.sh';
 
   console.log('Starting process with command:', command);
@@ -87,7 +95,7 @@ export async function ensureMoltbotGateway(sandbox: Sandbox, env: MoltbotEnv): P
   let process: Process;
   try {
     process = await sandbox.startProcess(command, {
-      env: Object.keys(envVars).length > 0 ? envVars : undefined,
+      env: Object.keys(finalEnvVars).length > 0 ? finalEnvVars : undefined,
     });
     console.log('Process started with id:', process.id, 'status:', process.status);
   } catch (startErr) {
