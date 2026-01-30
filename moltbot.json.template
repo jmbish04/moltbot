@@ -39,7 +39,7 @@
     },
     "cloudflare": {
       "accountId": "${CF_ACCOUNT_ID}",
-      "apiToken": "${CF_API_TOKEN}",
+      "apiToken": "${CF_GATEWAY_API_TOKEN}",
       "gateway": "${CF_AI_GATEWAY}"
     }
   },
