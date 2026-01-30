@@ -104,6 +104,31 @@ function buildSandboxOptions(env: MoltbotEnv): SandboxOptions {
   return { sleepAfter };
 }
 
+
+/**
+ * Scans the environment bindings and extracts all string-based secrets and 
+ * configuration values to be injected into the Moltbot container.
+ * * This allows for "Full Auto" orchestration where any secret added via 
+ * `wrangler secret put` (e.g., ANTHROPIC_API_KEY, OPENAI_API_KEY, GOOGLE_API_KEY) 
+ * is automatically made available as an environment variable inside the 
+ * Sandbox container without manual mapping in wrangler.jsonc.
+ * * @param env - The Moltbot environment bindings object.
+ * @returns A record of key-value pairs containing only string-based secrets.
+ */
+function getSecretEnvVars(env: MoltbotEnv): Record<string, string> {
+  const secretVars: Record<string, string> = {};
+  
+  for (const [key, value] of Object.entries(env)) {
+    // Only include strings to avoid passing complex objects like 
+    // Durable Objects (Sandbox), Fetchers (ASSETS/BROWSER), or R2 buckets.
+    if (typeof value === 'string' && value !== '') {
+      secretVars[key] = value;
+    }
+  }
+  
+  return secretVars;
+}
+
 // Main app
 const app = new Hono<AppEnv>();
 
@@ -214,6 +239,7 @@ app.route('/debug', debug);
 
 app.all('*', async (c) => {
   const sandbox = c.get('sandbox');
+  const allSecrets = getSecretEnvVars(c.env); // Capture all secrets
   const request = c.req.raw;
   const url = new URL(request.url);
 
@@ -243,7 +269,8 @@ app.all('*', async (c) => {
 
   // Ensure moltbot is running (this will wait for startup)
   try {
-    await ensureMoltbotGateway(sandbox, c.env);
+    // Pass these secrets to your orchestration logic
+    await ensureMoltbotGateway(sandbox, c.env, allSecrets);
   } catch (error) {
     console.error('[PROXY] Failed to start Moltbot:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
