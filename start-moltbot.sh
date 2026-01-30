@@ -15,6 +15,12 @@ if pgrep -f "clawdbot gateway" > /dev/null 2>&1; then
     exit 0
 fi
 
+# Optional: Use envsubst if you want to support ${} in the raw template file
+# Requires 'gettext-base' to be installed in your Dockerfile
+if command -v envsubst > /dev/null; then
+    envsubst < "$TEMPLATE_FILE" > "$CONFIG_FILE"
+fi
+
 # Paths (clawdbot paths are used internally - upstream hasn't renamed yet)
 CONFIG_DIR="/root/.clawdbot"
 CONFIG_FILE="$CONFIG_DIR/clawdbot.json"
