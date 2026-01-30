@@ -1,26 +1,40 @@
 # Copy this to .dev.vars and fill in your values
 # .dev.vars is gitignored and used by wrangler dev
 
+# --- AI Providers ---
 ANTHROPIC_API_KEY=sk-ant-...
+OPENAI_API_KEY=sk-proj-...
+OPENAI_MODEL=gpt-4o
+GOOGLE_API_KEY=AIza...
 
+# --- Cloudflare Configuration ---
+# Required for R2 and Workers AI
+CF_ACCOUNT_ID=your-account-id
+CF_API_TOKEN=your-api-token
+# Optional: ID of your Cloudflare AI Gateway
+CF_AI_GATEWAY=my-gateway-id
+
+# --- Moltbot Gateway ---
+# Token to protect the gateway UI
+MOLTBOT_GATEWAY_TOKEN=dev-token-change-in-prod
+
+# --- Development Settings ---
 # Local development mode - skips Cloudflare Access auth and bypasses device pairing
 # DEV_MODE=true
 
 # Enable debug routes at /debug/* (optional)
 # DEBUG_ROUTES=true
 
-# Optional - set a fixed token instead of auto-generated
-MOLTBOT_GATEWAY_TOKEN=dev-token-change-in-prod
-
-# Cloudflare Access configuration for /_admin and /api routes
-# Required for admin UI and device pairing API in production
+# --- Cloudflare Access (for Admin UI) ---
 # CF_ACCESS_TEAM_DOMAIN=myteam.cloudflareaccess.com
 # CF_ACCESS_AUD=your-application-audience-tag
 
-# Optional chat channels
-# TELEGRAM_BOT_TOKEN=optional
-# DISCORD_BOT_TOKEN=optional
+# --- Chat Channels (Optional) ---
+# TELEGRAM_BOT_TOKEN=
+# DISCORD_BOT_TOKEN=
+# SLACK_BOT_TOKEN=
+# SLACK_APP_TOKEN=
 
-# CDP (Chrome DevTools Protocol) configuration for browser automation
+# --- Browser Automation (Optional) ---
 # CDP_SECRET=shared-secret-for-cdp-auth
 # WORKER_URL=https://your-worker.example.com
